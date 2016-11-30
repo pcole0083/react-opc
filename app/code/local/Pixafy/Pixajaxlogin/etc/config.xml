@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Pixafy_Pixajaxlogin>
+            <version>0.1.0</version>
+        </Pixafy_Pixajaxlogin>
+    </modules>
+    <global>
+        <helpers>
+            <pixajaxlogin>
+                <class>Pixafy_Pixajaxlogin_Helper</class>
+            </pixajaxlogin>
+        </helpers>
+    </global>
+    <frontend>
+        <routers>
+        <pixajaxlogin>
+            <use>standard</use>
+            <args>
+                <module>Pixafy_Pixajaxlogin</module>
+                <frontName>pixajaxlogin</frontName>
+            </args>
+        </pixajaxlogin>
+        </routers>
+        <secure_url>
+            <all>/</all>
+        </secure_url>
+    </frontend>
+</config>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Pixafy_Pixcustomer>
+            <active>true</active>
+            <codePool>local</codePool>
+        </Pixafy_Pixcustomer>
+    </modules>
+</config>

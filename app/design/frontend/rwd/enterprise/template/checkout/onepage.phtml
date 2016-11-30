@@ -1,0 +1,99 @@
+<?php
+/**
+ * Magento Enterprise Edition
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Magento Enterprise Edition License
+ * that is bundled with this package in the file LICENSE_EE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://www.magentocommerce.com/license/enterprise-edition
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     rwd_default
+ * @copyright   Copyright (c) 2014 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://www.magentocommerce.com/license/enterprise-edition
+ */
+
+    $baseURL    = $this->getUrl('', array('_secure' => true));
+    $form_key   = Mage::getSingleton('core/session')->getFormKey();
+    $cssURL     = $this->getSkinUrl('checkout/css/main.d2b3020f.css', array('_secure' => true));
+    $jsURL      = $this->getSkinUrl('checkout/js/main.5dddfd92.js', array('_secure' => true));
+/*
+ *
+ */
+
+    $progress   = $this->getUrl('checkout/onepage/progress');
+    $review     = $this->getUrl('checkout/onepage/review');
+    $saveMethod = $this->getUrl('checkout/onepage/saveMethod');
+    $failure    = $this->getUrl('checkout/cart');
+
+    //Billling
+    $saveBilling = $this->getUrl('checkout/onepage/saveBilling');
+    //Shipping
+    $saveShipping = $this->getUrl('checkout/onepage/saveShipping');
+    //Get Additional
+    $giftOptions = $this->getUrl('checkout/onepage/getAdditional');
+    //ShippingMethod
+    $saveShippingMethod = $this->getUrl('checkout/onepage/saveShippingMethod');
+    //Payment
+    $savePayment = $this->getUrl('checkout/onepage/savePayment');
+    //Order
+    $saveOrder = $this->getUrl('checkout/onepage/saveOrder', array('form_key' => $form_key));
+    
+    //QuoteBaseGrandTotal
+    $quoteBaseGrandTotal = (float)$this->getQuoteBaseGrandTotal();
+    
+    $checkoutUrls = array(
+        'form_key'      =>     $form_key,
+        'baseUrl'       =>     $baseURL,
+        'workerUrl'     =>     $this->getSkinUrl('checkout/js/lib/ajaxWorker.js', array('_secure' => true)),
+        'progress'      =>     $progress,
+        'failure'       =>     $failure,
+        'save' => array(
+            'method'            => $saveMethod,
+            'login'             => Mage::helper('pixajaxlogin')->getAjaxLoginPostURL(), //$this->getUrl('customer/account/loginPost', array('form_key' => $form_key)),
+            'billing'           => $saveBilling,
+            'shipping'          => $saveShipping,
+            'shippingMethod'    => $saveShippingMethod,
+            'giftOptions'       => $giftOptions,
+            'payment'           => $savePayment,
+            'review'            => $review,
+            'order'             => $saveOrder
+        )
+    );
+
+    $loginStatus = Mage::getSingleton('customer/session')->isLoggedIn();
+    $username = $loginStatus == true ? Mage::helper('customer')->getCustomerName() : 'Guest';
+    $currentStep = $loginStatus == true ? 2 : 1;
+
+    $userInfo = array(
+        'loggedin' => $loginStatus,
+        'username' => $username,
+        'currentStep' => $currentStep
+    );
+
+    $addresses = Mage::helper('pixafy_pixcustomer')->getAllAddressesJSON();
+
+    $cartInfo = Mage::helper('pixafy_pixcheckout')->getCartJSON();
+    //var_dump($addresses);
+?>
+<div class="page-title">
+    <h1><?php echo $this->__('Checkout') ?></h1>
+</div>
+<link href="<?php echo $cssURL; ?>" rel="stylesheet">
+<div id="checkout_root"></div>
+<input type="hidden" id="checkoutUrls" value='<?php echo json_encode($checkoutUrls); ?>' />
+<input type="hidden" id="userInfo" value='<?php echo json_encode($userInfo); ?>' />
+<input type="hidden" id="userAddresses" value='<?php echo json_encode($addresses); ?>' />
+<input type="hidden" id="cartInfo" value='<?php echo json_encode($cartInfo); ?>' />
+<script type="text/javascript" src="<?php echo $jsURL; ?>"></script>

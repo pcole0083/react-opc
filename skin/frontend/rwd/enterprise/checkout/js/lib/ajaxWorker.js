@@ -32,9 +32,7 @@ const ajaxFetch = function(url, options, successCallback) {
     fetch(myRequest)
         .then(checkStatus)
         .then(parseJSON)
-        .then(function(data) {
-            console.log('request succeeded with JSON response', data);
-        }).catch(function(error) {
+        .catch(function(error) {
             console.log('request failed', error);
         });
 };

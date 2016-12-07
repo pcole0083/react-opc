@@ -3,11 +3,11 @@
 class Pixafy_Pixcustomer_Helper_Data extends Mage_Core_Helper_Abstract {
 
 	public function getAllAddressesJSON(){
-		if(is_null($this->_customer)){
+		if(!isset($this->_customer)){
 			$this->_customer = Mage::helper('customer')->getCustomer();
 		}
 
-		if(is_null($this->_addressesCollection)){
+		if(!isset($this->_addressesCollection)){
 			$this->_addressesCollection = $this->_customer->getAddresses();
 		}
 

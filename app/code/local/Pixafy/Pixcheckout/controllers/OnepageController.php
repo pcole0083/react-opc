@@ -106,6 +106,7 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
     	$allActivePaymentMethods = $_paymentHelper->getStoreMethods(Mage::app()->getStore(), $quote);
     	//$allActivePaymentMethods = Mage::getSingleton('payment/config')->getActiveMethods();
     	$payment_methods = array();
+    	$html = $this->_getOutPut();
 
     	foreach ($allActivePaymentMethods as $key => $method) {
     		$_code = $method->getCode();
@@ -130,7 +131,9 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
 	                	'__html' => 	'<span class="method-title">'.$paymentTitle.'</span>'
 	                ),
 	                'selected' =>        '',
-	                'displayOnSelect' => $_paymentHelper->getMethodFormBlock($method)
+	                'displayOnSelect' => array(
+	                	'__html' =>      $this->getMethodFormBlock($html, $code, $key)
+	                )
 	    		);
     		}
     	}
@@ -138,23 +141,58 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
     }
 
     /**
+     * [_getOutPut description]
+     * @return [type] [description]
+     */
+    private function _getOutPut(){
+    	if(!isset($this->_outputHTML)){
+	    	$layout = $this->getLayout();
+	        $update = $layout->getUpdate();
+	        $update->load('checkout_onepage_paymentmethod');
+	        $layout->generateXml();
+	        $layout->generateBlocks();
+	        $output = $layout->getOutput();
+	        $this->_outputHTML = $output;
+	    }
+        return $this->_outputHTML;
+    }
+
+    /**
      * Get payment method step html
      *
      * @return string
      */
-    public function getMethodFormBlock(Mage_Payment_Model_Method_Abstract $method)
-    {
-        $block = false;
-        $blockType = $method->getFormBlockType();
-        if ($this->getLayout()) {
-            $block = $this->getLayout()->createBlock($blockType);
-            $block->setMethod($method);
+    public function getMethodFormBlock($html, $code, $key)
+    {	
+    	
+    	
+        $blocksArray = explode('</dd>', $html);
+		$block = $blocksArray[$key];
 
-            if($block->toHtml){
-            	return $block->toHtml();
-            }
-        }
-        return $block->getMethod();
+		$search = array(
+	        '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
+	        '/[^\S ]+\</s',  // strip whitespaces before tags, except space
+	        '/(\s)+/s',       // shorten multiple whitespace sequences
+
+	    );
+
+	    $replace = array(
+	        '>',
+	        '<',
+	        '\\1'
+	    );
+
+		$block = preg_replace($search, $replace, $block);
+		//
+		$re = '/(^.*<dd>)/i';
+		$none = 'display:none;';
+		$_html = preg_replace($re, '', ''.$block);
+		$_html = str_ireplace($none, '', $_html);
+        //$re = '/(\<ul class="form-list"[.*]\<\/ul\>)/im';
+        
+        //$grep_block = preg_grep($re, $blocksArray);
+
+        return $_html;
     }
 
     /**
@@ -262,6 +300,8 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
      */
     public function saveShippingMethodAction()
     {
+        //echo "<pre>";
+        //var_dump($this->_getPaymentMethodsJSON());
         if ($this->_expireAjax()) {
             return;
         }

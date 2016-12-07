@@ -126,7 +126,6 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
 	        		'id' =>              'p_method_'.$_code,
 	                'type' =>            'radio',
 	                'value' =>           $_code,
-	                'getCode' => 		 $method->getCode(),
 	                'labelText' =>       array(
 	                	'__html' => 	'<span class="method-title">'.$paymentTitle.'</span>'
 	                ),
@@ -152,7 +151,20 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
 	        $layout->generateXml();
 	        $layout->generateBlocks();
 	        $output = $layout->getOutput();
-	        $this->_outputHTML = $output;
+
+	        $search = array(
+		        '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
+		        '/[^\S ]+\</s',  // strip whitespaces before tags, except space
+		        '/(\s)+/s'       // shorten multiple whitespace sequences
+		    );
+
+		    $replace = array(
+		        '>',
+		        '<',
+		        '\\1'
+		    );
+
+	        $this->_outputHTML = preg_replace($search, $replace, $output);
 	    }
         return $this->_outputHTML;
     }
@@ -164,16 +176,14 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
      */
     public function getMethodFormBlock($html, $code, $key)
     {	
-    	
-    	
-        $blocksArray = explode('</dd>', $html);
+        $blocksArray = explode('<dt>', $html);
+		array_shift($blocksArray);
 		$block = $blocksArray[$key];
 
 		$search = array(
 	        '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
 	        '/[^\S ]+\</s',  // strip whitespaces before tags, except space
-	        '/(\s)+/s',       // shorten multiple whitespace sequences
-
+	        '/(\s)+/s'       // shorten multiple whitespace sequences
 	    );
 
 	    $replace = array(
@@ -183,14 +193,16 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
 	    );
 
 		$block = preg_replace($search, $replace, $block);
+
+		if(stripos($block, '<dd>') == false){
+			return '';
+		}
 		//
 		$re = '/(^.*<dd>)/i';
 		$none = 'display:none;';
+		//
 		$_html = preg_replace($re, '', ''.$block);
 		$_html = str_ireplace($none, '', $_html);
-        //$re = '/(\<ul class="form-list"[.*]\<\/ul\>)/im';
-        
-        //$grep_block = preg_grep($re, $blocksArray);
 
         return $_html;
     }

@@ -106,7 +106,7 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
     	$allActivePaymentMethods = $_paymentHelper->getStoreMethods(Mage::app()->getStore(), $quote);
     	//$allActivePaymentMethods = Mage::getSingleton('payment/config')->getActiveMethods();
     	$payment_methods = array();
-    	$html = $this->_getOutPut();
+    	$html = $this->_getOutput();
 
     	foreach ($allActivePaymentMethods as $key => $method) {
     		$_code = $method->getCode();
@@ -143,7 +143,7 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
      * [_getOutPut description]
      * @return [type] [description]
      */
-    private function _getOutPut(){
+    protected function _getOutput(){
     	if(!isset($this->_outputHTML)){
 	    	$layout = $this->getLayout();
 	        $update = $layout->getUpdate();
@@ -192,19 +192,41 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
 	        '\\1'
 	    );
 
-		$block = preg_replace($search, $replace, $block);
+		$new_block = preg_replace($search, $replace, $block);
 
-		if(stripos($block, '<dd>') == false){
+		if(stripos($new_block, '<dd>') == false){
 			return '';
 		}
 		//
-		$re = '/(^.*<dd>)/i';
+		$search2 = array(
+			'/(^.*<dd>)/i',
+			'/<script.*?\/script>/ius'
+		);
+		$remove = array(
+			'',
+			''
+		);
 		$none = 'display:none;';
 		//
-		$_html = preg_replace($re, '', ''.$block);
+		$_html = preg_replace($search2, $remove, $new_block);
 		$_html = str_ireplace($none, '', $_html);
 
         return $_html;
+    }
+
+    protected function _removeExtraWhiteSpace($string){
+    	$search = array(
+	        '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
+	        '/[^\S ]+\</s',  // strip whitespaces before tags, except space
+	        '/(\s)+/s'       // shorten multiple whitespace sequences
+	    );
+
+	    $replace = array(
+	        '>',
+	        '<',
+	        '\\1'
+	    );
+	    return preg_replace($seach, $replace, $string);
     }
 
     /**
@@ -312,8 +334,8 @@ class Pixafy_Pixcheckout_OnepageController extends Mage_Checkout_OnepageControll
      */
     public function saveShippingMethodAction()
     {
-        //echo "<pre>";
-        //var_dump($this->_getPaymentMethodsJSON());
+        // echo "<pre>";
+        // var_dump($this->_getPaymentMethodsJSON());
         if ($this->_expireAjax()) {
             return;
         }
